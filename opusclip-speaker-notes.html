@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpusClip — Speaker Notes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: "Figtree", system-ui, sans-serif; max-width: 720px; margin: 0 auto; padding: 64px 24px; color: #111214; -webkit-font-smoothing: antialiased; }
+    h1 { font-size: 32px; font-weight: 700; margin-bottom: 48px; }
+    .slide-note { margin-bottom: 40px; padding-bottom: 40px; border-bottom: 1px solid rgba(17,18,20,0.1); }
+    .slide-note:last-child { border-bottom: none; }
+    .slide-num { font-size: 13px; font-weight: 600; color: rgba(17,18,20,0.4); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 6px; }
+    .slide-label { font-size: 14px; font-weight: 500; color: rgba(17,18,20,0.5); margin-bottom: 4px; }
+    .slide-title { font-size: 22px; font-weight: 600; margin-bottom: 12px; line-height: 1.3; }
+    .slide-body { font-size: 16px; color: rgba(17,18,20,0.64); line-height: 1.65; }
+    .slide-body + .slide-body { margin-top: 10px; }
+    .iter { margin-top: 16px; padding-left: 16px; border-left: 2px solid rgba(17,18,20,0.08); }
+    .iter-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .iter-note { font-size: 15px; color: rgba(17,18,20,0.55); line-height: 1.55; }
+    @media print { body { padding: 32px 16px; } .slide-note { page-break-inside: avoid; } }
+  </style>
+</head>
+<body>
+
+<h1>OpusClip Mobile MVP — Speaker Notes</h1>
+
+<div class="slide-note">
+  <div class="slide-num">Slide 1</div>
+  <div class="slide-label">Hero</div>
+  <div class="slide-title">OpusClip AI Video Clipping</div>
+  <p class="slide-body">Defining OpusClip's first mobile experience for AI video clipping.</p>
+</div>
+
+<div class="slide-note">
+  <div class="slide-num">Slide 2</div>
+  <div class="slide-label">Impact</div>
+  <div class="slide-title">Results across retention, adoption, and publish rate</div>
+  <p class="slide-body">The mobile MVP moved the needle across the metrics we scoped it for, giving creators a reason to stay in the product and publish more often.</p>
+</div>
+
+<div class="slide-note">
+  <div class="slide-num">Slide 3</div>
+  <div class="slide-label">Background</div>
+  <div class="slide-title">As creators increasingly film, edit, and publish on their phones, OpusClip needed a mobile experience to support their full workflow.</div>
+  <p class="slide-body">OpusClip's AI clip-generation engine only lived on the web. As more creators started filming and editing entirely from their phones, the product needed a mobile presence to meet them where they already were, without waiting to get back to a desktop.</p>
+</div>
+
+<div class="slide-note">
+  <div class="slide-num">Slide 4</div>
+  <div class="slide-label">Design Process</div>
+  <div class="slide-title">Simplifying the workflow, rethinking the interaction.</div>
+  <p class="slide-body">We scoped the mobile MVP around OpusClip's core value: helping creators turn long videos into short, publishable clips with as little friction as possible. Instead of reproducing the full desktop workflow, we identified which steps were essential to completing that job and which controls could be simplified or left out.</p>
+  <p class="slide-body">From there, the design focus is how each step should work on a phone, comparing interaction patterns to find the clearest and most efficient mobile experience without removing the moments of creator control that mattered.</p>
+</div>
+
+<div class="slide-note">
+  <div class="slide-num">Slide 5</div>
+  <div class="slide-label">Design Challenge 01 · Presets</div>
+  <div class="slide-title">HMW help mobile users select presets effortlessly?</div>
+  <p class="slide-body">Before AI could generate clips, users needed to configure clip length, language, genre, and style. The challenge was making setup easy to scan and complete on a small screen.</p>
+</div>
+
+<div class="slide-note">
+  <div class="slide-num">Slide 6</div>
+  <div class="slide-label">Challenge 01 — Iterations</div>
+  <div class="slide-title">Preset selection iterations</div>
+  <div class="iter">
+    <div class="iter-name">1st — All-in-one page</div>
+    <p class="iter-note">Comprehensive control, but too many options on one page causes information overload.</p>
+  </div>
+  <div class="iter">
+    <div class="iter-name">2nd — Step-by-step wizard</div>
+    <p class="iter-note">One choice at a time, but forces users through all options and makes backtracking hard.</p>
+  </div>
+  <div class="iter">
+    <div class="iter-name">3rd — One-page summary</div>
+    <p class="iter-note">Fast and lightweight, but editable controls split between the right side and bottom sheets.</p>
+  </div>
+  <div class="iter">
+    <div class="iter-name">Final — One summary, one bottom interaction zone</div>
+    <p class="iter-note">All editable controls consolidated into a single bottom zone — easier to review and adjust in one place.</p>
+  </div>
+</div>
+
+<div class="slide-note">
+  <div class="slide-num">Slide 7</div>
+  <div class="slide-label">Design Challenge 02 · Compare Clips</div>
+  <div class="slide-title">HMW help mobile users preview and compare AI-generated clips?</div>
+  <p class="slide-body">Once AI generated multiple clips, users needed enough context to compare alternatives and decide which to publish — on a small screen.</p>
+</div>
+
+<div class="slide-note">
+  <div class="slide-num">Slide 8</div>
+  <div class="slide-label">Challenge 02 — Iterations</div>
+  <div class="slide-title">Clip comparison iterations</div>
+  <div class="iter">
+    <div class="iter-name">1st — Click & scroll</div>
+    <p class="iter-note">Easy to scan, but switching between clips required returning to the list — comparison felt slow.</p>
+  </div>
+  <div class="iter">
+    <div class="iter-name">2nd — Swipe left & right</div>
+    <p class="iter-note">Multiple swipe directions made interactions hard to discover and conflicted with system back gestures.</p>
+  </div>
+  <div class="iter">
+    <div class="iter-name">Final — Vertical swipe, explicit controls for context</div>
+    <p class="iter-note">Fast clip comparison with vertical swiping. AI scores, reasoning, and transcripts surfaced through explicit controls.</p>
+  </div>
+</div>
+
+<div class="slide-note">
+  <div class="slide-num">Slide 9</div>
+  <div class="slide-label">Next Steps</div>
+  <div class="slide-title">Bring advanced editing tools to mobile</div>
+  <p class="slide-body">The launched version focuses on core flows. Next, we plan to bring advanced capabilities from the web — editing tools, caption customization, and more — to enable full on-the-go video creation.</p>
+</div>
+
+</body>
+</html>

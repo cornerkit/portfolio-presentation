@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buzzy AI — Case Study</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #ffffff;
+      --card: #f1f2f4;
+      --text: #111214;
+      --muted: rgba(17,18,20,0.5);
+      --soft: rgba(17,18,20,0.64);
+      --faint: rgba(17,18,20,0.38);
+      --radius: 16px;
+      --radius-sm: 12px;
+      --gap: 24px;
+      --sans: "Figtree", system-ui, -apple-system, sans-serif;
+    }
+
+    html {
+      overflow: hidden;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    /* ─── Slide System ─── */
+    .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 64px 40px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+      overflow-y: auto;
+    }
+
+    .slide.active-slide {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .slide-inner {
+      max-width: 1080px;
+      width: 100%;
+    }
+
+    .slide.tall {
+      align-items: flex-start;
+      padding-top: 80px;
+      padding-bottom: 80px;
+    }
+
+    /* ─── Pagination Dots ─── */
+    .pagination {
+      position: fixed;
+      right: 28px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      z-index: 200;
+    }
+
+    .pagination button {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(17,18,20,0.15);
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .pagination button.active {
+      background: var(--text);
+      transform: scale(1.3);
+    }
+
+    .pagination button:hover {
+      background: rgba(17,18,20,0.4);
+    }
+
+    .pagination .appendix-separator {
+      width: 10px;
+      height: 1px;
+      background: rgba(17,18,20,0.15);
+      margin: 4px 0;
+    }
+
+    /* ─── Typography ─── */
+    .title {
+      font-size: clamp(44px, 6vw, 64px);
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      font-size: 26px;
+      font-weight: 400;
+      color: var(--soft);
+      line-height: 1.5;
+      max-width: 720px;
+    }
+
+    .section-title {
+      font-size: clamp(30px, 4vw, 40px);
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .body {
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--soft);
+      line-height: 1.65;
+      max-width: 720px;
+    }
+
+    .label {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+
+    /* ─── Center Title (HMW / Insight) ─── */
+    .center-title {
+      font-size: clamp(36px, 5vw, 52px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      max-width: 780px;
+    }
+
+    /* ─── Tags ─── */
+    .tags {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .tag {
+      font-size: 15px;
+      font-weight: 500;
+      padding: 7px 18px;
+      border-radius: 100px;
+      background: var(--card);
+      color: var(--soft);
+    }
+
+    /* ─── Meta ─── */
+    .meta-row {
+      display: flex;
+      gap: 48px;
+      margin-top: 20px;
+    }
+
+    .meta-item .label { margin-bottom: 4px; }
+    .meta-item .value { font-size: 18px; font-weight: 500; }
+
+    /* ─── Media ─── */
+    .full-media {
+      margin-top: 48px;
+    }
+
+    .full-media img,
+    .full-media video {
+      width: 100%;
+      border-radius: var(--radius);
+      display: block;
+    }
+
+    /* ─── Placeholder Frame ─── */
+    .placeholder {
+      width: 100%;
+      border-radius: var(--radius);
+      background: var(--card);
+      border: 2px dashed rgba(17,18,20,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--faint);
+      font-size: 16px;
+      font-weight: 500;
+      margin-top: 48px;
+    }
+
+    .placeholder.hero-ph {
+      aspect-ratio: 16 / 9;
+    }
+
+    .placeholder.context-ph {
+      aspect-ratio: 16 / 8;
+    }
+
+    .placeholder.wide-ph {
+      aspect-ratio: 16 / 7;
+    }
+
+    .placeholder.iter-ph {
+      aspect-ratio: 16 / 9;
+      margin-top: 28px;
+    }
+
+    /* ─── Metrics ─── */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--gap);
+      margin-top: 48px;
+    }
+
+    .metric {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 64px 28px;
+      text-align: center;
+    }
+
+    .metric .num {
+      font-size: clamp(40px, 5vw, 56px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .metric .desc {
+      font-size: 17px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    /* ─── Cards ─── */
+    .card-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap);
+      margin-top: 40px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+    }
+
+    .card .card-label {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .card ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card li {
+      font-size: 18px;
+      color: var(--soft);
+      line-height: 1.55;
+      padding-left: 18px;
+      position: relative;
+    }
+
+    .card li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 11px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--faint);
+    }
+
+    /* ─── Ambiguity Blocks ─── */
+    .ambiguity-blocks {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap);
+      margin-top: 40px;
+    }
+
+    .ambiguity-block {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 44px 28px;
+    }
+
+    .ambiguity-block .block-num {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .ambiguity-block .block-title {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .ambiguity-block .block-body {
+      font-size: 17px;
+      color: var(--soft);
+      line-height: 1.6;
+    }
+
+    /* ─── Track Cards ─── */
+    .track-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 44px 28px;
+    }
+
+    .track-card .track-num {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .track-card .track-title {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .track-card .track-sub {
+      font-size: 17px;
+      color: var(--soft);
+      line-height: 1.5;
+    }
+
+    /* ─── Context Flow ─── */
+    .context-flow {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 40px;
+    }
+
+    .context-step {
+      flex: 1;
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      text-align: center;
+    }
+
+    .context-step .step-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .context-step .step-title {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .context-arrow {
+      font-size: 20px;
+      color: var(--faint);
+      flex-shrink: 0;
+    }
+
+    /* ─── Iterations ─── */
+    .iteration {
+      margin-top: 64px;
+    }
+
+    .iteration + .iteration {
+      margin-top: 80px;
+    }
+
+    .iteration .iter-label {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .iteration .iter-title {
+      font-size: 26px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .iteration .iter-desc {
+      font-size: 20px;
+      color: var(--soft);
+      line-height: 1.6;
+      max-width: 720px;
+      margin-bottom: 28px;
+    }
+
+    .iteration img,
+    .iteration video {
+      width: 100%;
+      border-radius: var(--radius);
+      display: block;
+    }
+
+    .iteration.final .iter-label {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* ─── Footer ─── */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      padding: 0;
+    }
+
+    .footer-nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 18px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .footer-nav a:hover { color: var(--text); }
+
+    /* ─── Image Matrix ─── */
+    .matrix-grid {
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 0;
+    }
+
+    .matrix-grid img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      display: block;
+      opacity: 0;
+      transform: scale(1.05);
+      transition: opacity 0.4s ease, transform 0.6s ease;
+    }
+
+    .slide.active-slide .matrix-grid img {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .slide.active-slide .matrix-grid img {
+      opacity: 1;
+      transform: scale(1);
+      transition-delay: calc(var(--i) * 0.03s);
+    }
+
+    /* ─── Results layout ─── */
+    .results-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap);
+      margin-top: 48px;
+    }
+
+    .results-launch-media {
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .results-launch-media video,
+    .results-launch-media img {
+      width: 100%;
+      border-radius: var(--radius-sm);
+      display: block;
+    }
+
+    .results-launch-caption {
+      font-size: 14px;
+      color: var(--faint);
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    /* ─── Fade ─── */
+    .fade {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease 0.15s, transform 0.6s ease 0.15s;
+    }
+
+    .slide.active-slide .fade {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── Video Play/Pause ─── */
+    .video-wrap {
+      position: relative;
+    }
+
+    .video-wrap .play-pause-btn {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.5);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.25s;
+      z-index: 4;
+      backdrop-filter: blur(8px);
+    }
+
+    .video-wrap:hover .play-pause-btn {
+      opacity: 1;
+    }
+
+    .play-pause-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: #fff;
+    }
+
+    /* ─── Preview Modal ─── */
+    .preview-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+    }
+
+    .preview-overlay.open {
+      display: flex;
+    }
+
+    .preview-overlay img,
+    .preview-overlay video {
+      max-width: 90vw;
+      max-height: 90vh;
+      border-radius: var(--radius);
+      object-fit: contain;
+    }
+
+    .previewable {
+      cursor: zoom-in;
+    }
+
+    /* ─── Modal Carousel Nav ─── */
+    .preview-carousel-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+      transition: background 0.2s;
+      z-index: 502;
+    }
+
+    .preview-carousel-nav:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    .preview-carousel-nav svg {
+      width: 20px;
+      height: 20px;
+      fill: #fff;
+    }
+
+    .preview-carousel-nav.prev { left: 32px; }
+    .preview-carousel-nav.next { right: 32px; }
+
+    .preview-dots {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      z-index: 502;
+    }
+
+    .preview-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    .preview-dot.active {
+      background: #fff;
+      transform: scale(1.2);
+    }
+
+    /* ─── Modal Before/After Toggle ─── */
+    .preview-toggle {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 4px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 100px;
+      padding: 4px;
+      backdrop-filter: blur(12px);
+      z-index: 501;
+    }
+
+    .preview-toggle button {
+      padding: 8px 24px;
+      border: none;
+      border-radius: 100px;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s;
+      background: transparent;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .preview-toggle button.active {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 720px) {
+      .slide { padding: 48px 24px; }
+      .metrics { grid-template-columns: 1fr; }
+      .card-cols { grid-template-columns: 1fr; }
+      .ambiguity-blocks { grid-template-columns: 1fr; }
+      .meta-row { flex-wrap: wrap; gap: 24px; }
+      .pagination { right: 12px; gap: 10px; }
+      .pagination button { width: 8px; height: 8px; }
+      .context-flow { flex-direction: column; }
+      .context-arrow { transform: rotate(90deg); }
+      .results-split { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── Pagination Dots ─── -->
+<nav class="pagination" id="pagination"></nav>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 0 — Hero / Project Overview -->
+<!-- Speaker notes: Introduce yourself, the product, and your scope. ~1 min. -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide" id="slide-0">
+  <div class="slide-inner fade">
+    <h1 class="title">Buzzy AI Smart Edit</h1>
+    <p class="subtitle" style="margin-top: 20px;">Connecting AI editing with creative exploration.</p>
+    <div class="tags">
+      <span class="tag">AI-Native</span>
+      <span class="tag">Creative Tools</span>
+      <span class="tag">0→1 Product</span>
+      <span class="tag">Startup</span>
+    </div>
+    <div class="meta-row">
+      <div class="meta-item">
+        <div class="label">Role</div>
+        <div class="value">Founding Designer</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Time</div>
+        <div class="value">2025 – Present</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Team</div>
+        <div class="value">Product · Creative</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Scope</div>
+        <div class="value">0–1, End-to-End, Product Design, Design System</div>
+      </div>
+    </div>
+    <div class="full-media" style="margin-top: 40px;">
+      <video src="./covers-backup/buzzy-cover.mp4" autoplay muted loop playsinline style="width: 100%; border-radius: var(--radius); display: block;"></video>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 1 — Business Context -->
+<!-- Speaker notes: Set the scale. Show the existing product and the opportunity that led to Smart Edit. ~1 min. -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide" id="slide-1">
+  <div class="slide-inner fade">
+    <p class="label">Business Context</p>
+    <h2 class="section-title" style="margin-top: 10px;">Building on an existing base</h2>
+
+    <div style="display: flex; gap: 48px; margin-top: 48px; align-items: center;">
+      <div style="flex-shrink: 0; height: 580px;">
+        <video src="./covers-backup/buzzy-creator-ai.mov" autoplay muted loop playsinline style="height: 100%; width: auto; border-radius: 24px; display: block;"></video>
+      </div>
+      <div style="flex: 1;">
+        <div style="display: flex; gap: var(--gap);">
+          <div class="metric" style="text-align: left; padding: 48px 32px; flex: 1;">
+            <div class="num">5M+</div>
+            <div class="desc" style="text-align: left;">Consumer users<br><span style="font-size: 13px; color: var(--faint);">Creati AI · cumulative</span></div>
+          </div>
+          <div class="metric" style="text-align: left; padding: 48px 32px; flex: 1;">
+            <div class="num">22%</div>
+            <div class="desc" style="text-align: left;">DAU / MAU<br><span style="font-size: 13px; color: var(--faint);">Creati AI · daily stickiness</span></div>
+          </div>
+        </div>
+        <p class="body" style="margin-top: 24px;">Prompt-free AI video generation — fast, simple, viral.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 2 — Emerging User Needs -->
+<!-- Speaker notes: Users' needs evolved beyond what the mobile app could support. This created the opportunity for Smart Edit. ~1 min. -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide" id="slide-2">
+  <div class="slide-inner fade">
+    <p class="label">Emerging User Needs</p>
+    <h2 class="section-title" style="margin-top: 10px;">Video creators need consistent, intentional production — not disposable generation. That requires opinionated fine-tuning.</h2>
+
+    <div class="card-cols" style="margin-top: 40px;">
+      <div class="card">
+        <div class="card-label">Scaling Needs</div>
+        <ul>
+          <li><strong style="color: var(--text);">More videos, faster</strong> — production-scale output</li>
+          <li><strong style="color: var(--text);">Directional control</strong> — beyond one-shot generation</li>
+          <li><strong style="color: var(--text);">Mobile hit its ceiling</strong> for pro workflows</li>
+        </ul>
+      </div>
+      <div class="card" style="background: rgba(40, 167, 70, 0.06);">
+        <div class="card-label" style="color: rgba(30, 140, 60, 0.7);">Audience Shift</div>
+        <ul>
+          <li><strong style="color: var(--text);">SMB owners</strong> — branding-focused, not just viral creators</li>
+          <li><strong style="color: var(--text);">On-brand output</strong> — consistent, not random</li>
+          <li><strong style="color: var(--text);">New user group</strong> the app wasn't built for</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 3 — 0–1 Challenge -->
+<!-- Speaker notes: As the first designer, I faced both product and execution ambiguity. ~1 min. -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide" id="slide-3">
+  <div class="slide-inner fade" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+    <p class="label">0–1 Challenge</p>
+    <h1 class="title" style="margin-top: 16px;">What to build<br>and how to build it</h1>
+    <p class="body" style="margin-top: 24px; text-align: center; margin-left: auto; margin-right: auto;">As the first hire and in-house designer, I faced ambiguity on two fronts — defining what an AI-native editing experience should be, and building the design infrastructure to iterate fast enough to find out.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 3b — Design Infrastructure (IDE) -->
+<!-- Speaker notes: Show the code-based design workflow that enabled rapid iteration. ~1 min. -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide" id="slide-3b">
+  <div class="slide-inner fade">
+    <p class="label">Design Infrastructure</p>
+    <h2 class="section-title" style="margin-top: 10px;">Shipping UI in IDE</h2>
+    <div class="full-media">
+      <video src="./covers-backup/buzzy-design-infra.mov" autoplay muted loop playsinline style="width: 100%; border-radius: var(--radius); display: block;"></video>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 4 — Initial Smart Edit MVP -->
+<!-- Speaker notes: Walk through the initial product direction. We assumed users bring a video and want targeted edits. A standalone editor felt natural. ~1.5 min. -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide" id="slide-4">
+  <div class="slide-inner fade">
+    <p class="label">Initial Smart Edit MVP</p>
+    <h2 class="section-title" style="margin-top: 10px;">We started with a standalone AI editor</h2>
+    <div id="pcCarousel" style="margin-top: 40px; position: relative; border-radius: var(--radius); overflow: hidden;">
+      <img src="./covers-backup/buzzy-mvp-1.png" alt="MVP page 1" class="pc-frame" style="position: relative; width: 100%; display: block; transition: opacity 0.8s ease;">
+      <img src="./covers-backup/buzzy-mvp-2.png" alt="MVP page 2" class="pc-frame" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 0.8s ease;">
+      <img src="./covers-backup/buzzy-mvp-3.png" alt="MVP page 3" class="pc-frame" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 0.8s ease;">
+      <div id="pcDots" style="position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 3;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 5 — User Research & Turning Point -->
+<!-- Speaker notes: This is the key insight slide. Spend time here. Explain what we assumed, what we observed, and why it changed direction. ~2 min. -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide" id="slide-5">
+  <div class="slide-inner fade">
+    <p class="label" style="text-align: center;">User Research &amp; Turning Point</p>
+    <h2 class="center-title" style="margin-top: 16px; text-align: center; margin-left: auto; margin-right: auto;">Editing is woven into the creative process</h2>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 6 — Image Matrix Transition -->
+<!-- Speaker notes: Pause. Let the visuals breathe. These are outputs from the creative workflow. -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide" id="slide-6" style="padding: 0; overflow: hidden;">
+  <div class="matrix-grid">
+    <img src="./covers-backup/buzzy-grid-1.png" alt="" style="--i:0">
+    <img src="./covers-backup/buzzy-grid-2.png" alt="" style="--i:1">
+    <img src="./covers-backup/buzzy-grid-3.png" alt="" style="--i:2">
+    <img src="./covers-backup/buzzy-grid-4.png" alt="" style="--i:3">
+    <img src="./covers-backup/buzzy-grid-5.png" alt="" style="--i:4">
+    <img src="./covers-backup/buzzy-grid-6.png" alt="" style="--i:5">
+    <img src="./covers-backup/buzzy-grid-7.png" alt="" style="--i:6">
+    <img src="./covers-backup/buzzy-grid-8.png" alt="" style="--i:7">
+    <img src="./covers-backup/buzzy-grid-3.png" alt="" style="--i:8">
+    <img src="./covers-backup/buzzy-grid-1.png" alt="" style="--i:9">
+    <img src="./covers-backup/buzzy-grid-5.png" alt="" style="--i:10">
+    <img src="./covers-backup/buzzy-grid-7.png" alt="" style="--i:11">
+    <img src="./covers-backup/buzzy-grid-6.png" alt="" style="--i:12">
+    <img src="./covers-backup/buzzy-grid-4.png" alt="" style="--i:13">
+    <img src="./covers-backup/buzzy-grid-8.png" alt="" style="--i:14">
+    <img src="./covers-backup/buzzy-grid-2.png" alt="" style="--i:15">
+    <img src="./covers-backup/buzzy-grid-4.png" alt="" style="--i:16">
+    <img src="./covers-backup/buzzy-grid-8.png" alt="" style="--i:17">
+    <img src="./covers-backup/buzzy-grid-2.png" alt="" style="--i:18">
+    <img src="./covers-backup/buzzy-grid-6.png" alt="" style="--i:19">
+    <img src="./covers-backup/buzzy-grid-7.png" alt="" style="--i:20">
+    <img src="./covers-backup/buzzy-grid-5.png" alt="" style="--i:21">
+    <img src="./covers-backup/buzzy-grid-1.png" alt="" style="--i:22">
+    <img src="./covers-backup/buzzy-grid-3.png" alt="" style="--i:23">
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 7 — Product Pivot -->
+<!-- Speaker notes: Explain the reframing. Not a UI redesign — a change in the interaction model driven by observed user behavior. ~1.5 min. -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide" id="slide-7">
+  <div class="slide-inner fade">
+    <p class="label" style="text-align: center;">Product Pivot</p>
+    <h2 class="center-title" style="margin-top: 16px; text-align: center; margin-left: auto; margin-right: auto;">From a standalone editor to a connected creative workspace</h2>
+
+    <div class="context-flow" style="margin-top: 48px;">
+      <div class="context-step">
+        <div class="step-label">Before</div>
+        <div class="step-title">Generate → Export → Edit → Export</div>
+      </div>
+      <span class="context-arrow">→</span>
+      <div class="context-step" style="background: rgba(40, 167, 70, 0.06);">
+        <div class="step-label">After</div>
+        <div class="step-title">Generate ↔ Edit ↔ Compare ↔ Continue</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 8 — Decision 1: Entry Points -->
+<!-- Speaker notes: The initial editor assumed users already had a video. Many didn't. One entry point needed to serve both starting states. ~1.5 min. -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide" id="slide-8">
+  <div class="slide-inner fade" style="max-width: 1400px;">
+    <p class="label">Decision 1 · Entry Points</p>
+    <h2 class="section-title" style="margin-top: 10px;">Support different creative starting points</h2>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); margin-top: 32px;">
+      <div>
+        <p class="label" style="margin-bottom: 12px;">Before</p>
+        <div id="mvpCarousel" class="previewable" style="position: relative; border-radius: var(--radius-sm); overflow: hidden; aspect-ratio: 16 / 9;" data-preview-type="carousel" data-pair="entry" data-pair-side="before">
+          <img src="./covers-backup/buzzy-mvp-1.png" alt="MVP page 1" class="mvp-frame" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 0.8s ease;">
+          <img src="./covers-backup/buzzy-mvp-2.png" alt="MVP page 2" class="mvp-frame" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 0.8s ease;">
+          <img src="./covers-backup/buzzy-mvp-3.png" alt="MVP page 3" class="mvp-frame" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 0.8s ease;">
+          <div id="mvpDots" style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 3;"></div>
+        </div>
+      </div>
+      <div>
+        <p class="label" style="margin-bottom: 12px;">After</p>
+        <div class="video-wrap previewable" style="border-radius: var(--radius-sm); overflow: hidden; aspect-ratio: 16 / 9;" data-preview-src="./covers-backup/buzzy-entry-video-new.mov" data-preview-type="video" data-pair="entry" data-pair-side="after">
+          <video id="entryVideo" src="./covers-backup/buzzy-entry-video-new.mov" autoplay muted loop playsinline style="width: 100%; height: 100%; object-fit: cover; display: block;"></video>
+          <button class="play-pause-btn" id="entryPlayPause" onclick="event.stopPropagation(); toggleEntryVideo()">
+            <svg viewBox="0 0 24 24" id="entryPauseIcon"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            <svg viewBox="0 0 24 24" id="entryPlayIcon" style="display:none;"><polygon points="6,4 20,12 6,20"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 9 — Decision 2: Canvas -->
+<!-- Speaker notes: A linear editor makes comparison hard. The canvas keeps every branch visible. Creative exploration should branch, not chain. ~2 min. -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide" id="slide-9">
+  <div class="slide-inner fade" style="max-width: 1400px;">
+    <p class="label">Decision 2 · Spatial Workspace</p>
+    <h2 class="section-title" style="margin-top: 10px;">Keep creative branches visible and connected</h2>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); margin-top: 32px;">
+      <div>
+        <p class="label" style="margin-bottom: 12px;">Before</p>
+        <div class="previewable" style="border-radius: var(--radius-sm); overflow: hidden; aspect-ratio: 16 / 10;" data-preview-src="./covers-backup/buzzy-lobster.png" data-preview-type="image" data-pair="canvas" data-pair-side="before">
+          <img src="./covers-backup/buzzy-lobster.png" alt="Before — Editor based" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+        </div>
+      </div>
+      <div>
+        <p class="label" style="margin-bottom: 12px;">After</p>
+        <div class="previewable" style="border-radius: var(--radius-sm); overflow: hidden; aspect-ratio: 16 / 10;" data-preview-src="./covers-backup/buzzy-canvas-screenshot.png" data-preview-type="image" data-pair="canvas" data-pair-side="after">
+          <img src="./covers-backup/buzzy-canvas-screenshot.png" alt="After — Canvas based" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 10 — Results & Launch -->
+<!-- Speaker notes: Present the initial Smart Edit launch and early adoption data. Be honest about what we can and can't claim. ~1.5 min. -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide" id="slide-10">
+  <div class="slide-inner fade">
+    <p class="label">Launch &amp; Results</p>
+    <h2 class="section-title" style="margin-top: 10px;">Early signals from Smart Edit</h2>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); margin-top: 32px;">
+      <!-- Left: Launch video + Acquisition data -->
+      <div style="display: flex; flex-direction: column; gap: var(--gap);">
+        <div style="border: 1px solid rgba(17,18,20,0.1); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="border-radius: var(--radius-sm); overflow: hidden;">
+            <video src="./covers-backup/buzzy-launch-video.mov" autoplay muted loop playsinline style="width: 100%; display: block;"></video>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Acquisition + Metrics -->
+      <div>
+        <div class="previewable" style="border: 1px solid rgba(17,18,20,0.1); border-radius: var(--radius); padding: 16px; margin-bottom: var(--gap);" data-preview-src="./covers-backup/buzzy-acquisition-funnel.png" data-preview-type="image">
+          <p class="label" style="margin-bottom: 10px;">X/Twitter Acquisition Funnel · 6M</p>
+          <img src="./covers-backup/buzzy-acquisition-funnel.png" alt="Acquisition funnel" style="width: 100%; display: block; border-radius: var(--radius-sm);">
+        </div>
+        <p class="label" style="margin-bottom: 16px;">Feature Adoption &amp; Engagement Funnel</p>
+        <div class="metrics" style="margin-top: 0; grid-template-columns: 1fr;">
+          <div class="metric" style="padding: 44px 28px;">
+            <div class="num" style="font-size: 40px;">28.6%</div>
+            <div class="desc">Daily Entry CTR<br><span style="font-size: 13px; color: var(--faint);">Clicks / Entry Impressions · Day 7</span></div>
+          </div>
+          <div class="metric" style="padding: 44px 28px;">
+            <div class="num" style="font-size: 40px;">58.4%</div>
+            <div class="desc">First Completion Rate<br><span style="font-size: 13px; color: var(--faint);">First Completions / Feature Clicks · Day 7</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 11 — Decision 3: Post-launch Iteration -->
+<!-- Speaker notes: After initial launch, the canvas solved exploration and comparison. But precise editing still pulled users out of the workspace. This decision came after launch. ~2 min. -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide" id="slide-11">
+  <div class="slide-inner fade">
+    <p class="label">Post-launch Iteration · Decision 3</p>
+    <h2 class="section-title" style="margin-top: 10px;">Making editing native to the canvas</h2>
+
+    <div class="full-media" style="margin-top: 32px;">
+      <img src="./covers-backup/buzzy-editor-canvas.png" alt="Editor integrated into the canvas">
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 12 — Future Direction -->
+<!-- Speaker notes: Tie it together with the end-to-end flow. Show where the product is heading. ~1.5 min. -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide" id="slide-12">
+  <div class="slide-inner fade">
+    <p class="label">Future Direction</p>
+    <h2 class="section-title" style="margin-top: 10px;">Generate, edit, compare, and keep exploring</h2>
+
+    <div class="full-media" style="margin-top: 40px;">
+      <video src="https://res-prod.buzzy.now/file-service/b129ad35-22be-476e-8ddb-e7d792dfcf63.webm" autoplay muted loop playsinline style="width: 100%; border-radius: var(--radius); display: block;"></video>
+    </div>
+
+    <div class="footer-nav" style="margin-top: 64px;">
+      <a href="./opusclip-presentation.html">← OpusClip AI Video Clipping</a>
+      <a href="./opusclip-presentation.html">OpusClip AI Video Clipping →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Preview Modal ─── -->
+<div class="preview-overlay" id="previewOverlay">
+  <button class="preview-carousel-nav prev" id="previewPrev" style="display:none;" onclick="event.stopPropagation(); modalCarouselNav(-1)">
+    <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div id="previewContent"></div>
+  <button class="preview-carousel-nav next" id="previewNext" style="display:none;" onclick="event.stopPropagation(); modalCarouselNav(1)">
+    <svg viewBox="0 0 24 24"><polyline points="9,6 15,12 9,18" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div class="preview-dots" id="previewDots" style="display:none;"></div>
+  <div class="preview-toggle" id="previewToggle" style="display: none;">
+    <button id="previewBefore" onclick="event.stopPropagation(); showPreviewSide('before')">Before</button>
+    <button id="previewAfter" onclick="event.stopPropagation(); showPreviewSide('after')">After</button>
+  </div>
+</div>
+
+
+<script>
+  // ─── Slides & Pagination ───
+  const slides = document.querySelectorAll('.slide');
+  const pagWrap = document.getElementById('pagination');
+  let currentSlide = 0;
+  let isTransitioning = false;
+
+  slides.forEach((s, i) => {
+    const btn = document.createElement('button');
+    btn.setAttribute('aria-label', `Slide ${i + 1}`);
+    btn.addEventListener('click', () => goTo(i));
+    pagWrap.appendChild(btn);
+  });
+
+  const pagDots = pagWrap.querySelectorAll('button');
+
+  function goTo(idx) {
+    if (idx === currentSlide || idx < 0 || idx >= slides.length || isTransitioning) return;
+    isTransitioning = true;
+    slides[currentSlide].classList.remove('active-slide');
+    currentSlide = idx;
+    slides[currentSlide].classList.add('active-slide');
+    slides[currentSlide].scrollTop = 0;
+    pagDots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    setTimeout(() => { isTransitioning = false; }, 600);
+  }
+
+  // Show first slide
+  slides[0].classList.add('active-slide');
+  pagDots[0].classList.add('active');
+
+  // ─── Keyboard nav ───
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'PageDown') {
+      e.preventDefault();
+      goTo(currentSlide + 1);
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      goTo(currentSlide - 1);
+    }
+  });
+
+  // ─── PC Carousel with dots ───
+  const pcFrames = document.querySelectorAll('#pcCarousel .pc-frame');
+  const pcDotsWrap = document.getElementById('pcDots');
+  let pcCurrent = 0;
+
+  if (pcFrames.length && pcDotsWrap) {
+    pcFrames.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.style.cssText = 'width: 10px; height: 10px; border-radius: 50%; border: none; padding: 0; cursor: pointer; transition: all 0.3s;';
+      dot.style.background = i === 0 ? '#fff' : 'rgba(255,255,255,0.4)';
+      dot.addEventListener('click', () => pcGoTo(i));
+      pcDotsWrap.appendChild(dot);
+    });
+
+    const pcDotBtns = pcDotsWrap.querySelectorAll('button');
+
+    function pcGoTo(idx) {
+      pcFrames[pcCurrent].style.opacity = '0';
+      pcDotBtns[pcCurrent].style.background = 'rgba(255,255,255,0.4)';
+      pcCurrent = idx;
+      pcFrames[pcCurrent].style.opacity = '1';
+      pcDotBtns[pcCurrent].style.background = '#fff';
+    }
+  }
+
+  // ─── MVP Carousel with dots ───
+  const mvpFrames = document.querySelectorAll('#mvpCarousel .mvp-frame');
+  const mvpDotsWrap = document.getElementById('mvpDots');
+  let mvpCurrent = 0;
+
+  if (mvpFrames.length && mvpDotsWrap) {
+    mvpFrames.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.style.cssText = 'width: 10px; height: 10px; border-radius: 50%; border: none; padding: 0; cursor: pointer; transition: all 0.3s;';
+      dot.style.background = i === 0 ? '#fff' : 'rgba(255,255,255,0.4)';
+      dot.addEventListener('click', () => mvpGoTo(i));
+      mvpDotsWrap.appendChild(dot);
+    });
+
+    const mvpDotBtns = mvpDotsWrap.querySelectorAll('button');
+
+    function mvpGoTo(idx) {
+      mvpFrames[mvpCurrent].style.opacity = '0';
+      mvpDotBtns[mvpCurrent].style.background = 'rgba(255,255,255,0.4)';
+      mvpCurrent = idx;
+      mvpFrames[mvpCurrent].style.opacity = '1';
+      mvpDotBtns[mvpCurrent].style.background = '#fff';
+    }
+  }
+
+  // ─── Entry Video Play/Pause ───
+  function toggleEntryVideo() {
+    const vid = document.getElementById('entryVideo');
+    const pauseIcon = document.getElementById('entryPauseIcon');
+    const playIcon = document.getElementById('entryPlayIcon');
+    if (vid.paused) {
+      vid.play();
+      pauseIcon.style.display = '';
+      playIcon.style.display = 'none';
+    } else {
+      vid.pause();
+      pauseIcon.style.display = 'none';
+      playIcon.style.display = '';
+    }
+  }
+
+  // ─── Preview Modal ───
+  const overlay = document.getElementById('previewOverlay');
+  const previewContent = document.getElementById('previewContent');
+  const previewToggle = document.getElementById('previewToggle');
+  const previewBeforeBtn = document.getElementById('previewBefore');
+  const previewAfterBtn = document.getElementById('previewAfter');
+  let currentPairGroup = null;
+  let modalCarouselImages = [];
+  let modalCarouselIdx = 0;
+  const previewPrev = document.getElementById('previewPrev');
+  const previewNext = document.getElementById('previewNext');
+  const previewDotsWrap = document.getElementById('previewDots');
+
+  function hideCarouselNav() {
+    previewPrev.style.display = 'none';
+    previewNext.style.display = 'none';
+    previewDotsWrap.style.display = 'none';
+    previewDotsWrap.innerHTML = '';
+    modalCarouselImages = [];
+  }
+
+  function showCarouselNav() {
+    previewPrev.style.display = '';
+    previewNext.style.display = '';
+    previewDotsWrap.style.display = 'flex';
+  }
+
+  function updateModalCarousel() {
+    const img = previewContent.querySelector('img');
+    if (img) img.src = modalCarouselImages[modalCarouselIdx];
+    previewDotsWrap.querySelectorAll('.preview-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === modalCarouselIdx);
+    });
+  }
+
+  function modalCarouselNav(dir) {
+    modalCarouselIdx = (modalCarouselIdx + dir + modalCarouselImages.length) % modalCarouselImages.length;
+    updateModalCarousel();
+  }
+
+  function renderPreview(el) {
+    previewContent.innerHTML = '';
+    hideCarouselNav();
+    const type = el.dataset.previewType;
+
+    if (type === 'image') {
+      const img = document.createElement('img');
+      img.src = el.dataset.previewSrc;
+      previewContent.appendChild(img);
+    } else if (type === 'video') {
+      const vid = document.createElement('video');
+      vid.src = el.dataset.previewSrc;
+      vid.autoplay = true;
+      vid.muted = true;
+      vid.loop = true;
+      vid.playsInline = true;
+      previewContent.appendChild(vid);
+    } else if (type === 'carousel') {
+      const frames = el.querySelectorAll('.mvp-frame');
+      modalCarouselImages = [...frames].map(f => f.src);
+      // Find currently visible frame
+      const visibleIdx = [...frames].findIndex(f => f.style.opacity !== '0');
+      modalCarouselIdx = visibleIdx >= 0 ? visibleIdx : 0;
+
+      const img = document.createElement('img');
+      img.src = modalCarouselImages[modalCarouselIdx];
+      previewContent.appendChild(img);
+
+      // Build dots
+      modalCarouselImages.forEach((_, i) => {
+        const dot = document.createElement('button');
+        dot.className = 'preview-dot' + (i === modalCarouselIdx ? ' active' : '');
+        dot.addEventListener('click', (e) => {
+          e.stopPropagation();
+          modalCarouselIdx = i;
+          updateModalCarousel();
+        });
+        previewDotsWrap.appendChild(dot);
+      });
+
+      showCarouselNav();
+    }
+  }
+
+  function showPreviewSide(side) {
+    if (!currentPairGroup) return;
+    const target = document.querySelector(`.previewable[data-pair="${currentPairGroup}"][data-pair-side="${side}"]`);
+    if (!target) return;
+    renderPreview(target);
+    previewBeforeBtn.classList.toggle('active', side === 'before');
+    previewAfterBtn.classList.toggle('active', side === 'after');
+  }
+
+  document.querySelectorAll('.previewable').forEach(el => {
+    el.addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON') return;
+
+      renderPreview(el);
+
+      // Show before/after toggle if this element is part of a pair
+      if (el.dataset.pair) {
+        currentPairGroup = el.dataset.pair;
+        const side = el.dataset.pairSide;
+        previewBeforeBtn.classList.toggle('active', side === 'before');
+        previewAfterBtn.classList.toggle('active', side === 'after');
+        previewToggle.style.display = 'flex';
+      } else {
+        currentPairGroup = null;
+        previewToggle.style.display = 'none';
+      }
+
+      overlay.classList.add('open');
+    });
+  });
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      overlay.classList.remove('open');
+      previewContent.innerHTML = '';
+      previewToggle.style.display = 'none';
+      hideCarouselNav();
+      currentPairGroup = null;
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!overlay.classList.contains('open')) return;
+    if (e.key === 'Escape') {
+      overlay.classList.remove('open');
+      previewContent.innerHTML = '';
+      previewToggle.style.display = 'none';
+      hideCarouselNav();
+      currentPairGroup = null;
+    } else if (modalCarouselImages.length > 0) {
+      if (e.key === 'ArrowLeft') { e.stopPropagation(); modalCarouselNav(-1); }
+      if (e.key === 'ArrowRight') { e.stopPropagation(); modalCarouselNav(1); }
+    }
+  });
+</script>
+
+</body>
+</html>

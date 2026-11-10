@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpusClip Mobile MVP — Case Study</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #ffffff;
+      --card: #f1f2f4;
+      --text: #111214;
+      --muted: rgba(17,18,20,0.5);
+      --soft: rgba(17,18,20,0.64);
+      --faint: rgba(17,18,20,0.38);
+      --radius: 32px;
+      --gap: 24px;
+      --sans: "Figtree", system-ui, -apple-system, sans-serif;
+    }
+
+    html {
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ─── Slide System ─── */
+    .slide {
+      min-height: 100vh;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 64px 40px;
+      position: relative;
+    }
+
+    .slide-inner {
+      max-width: 1080px;
+      width: 100%;
+    }
+
+    .slide.tall {
+      align-items: flex-start;
+      padding-top: 80px;
+      padding-bottom: 80px;
+    }
+
+    /* ─── Pagination Dots ─── */
+    .pagination {
+      position: fixed;
+      right: 28px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      z-index: 200;
+    }
+
+    .pagination button {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(17,18,20,0.15);
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .pagination button.active {
+      background: var(--text);
+      transform: scale(1.3);
+    }
+
+    .pagination button:hover {
+      background: rgba(17,18,20,0.4);
+    }
+
+    /* ─── Typography ─── */
+    .title {
+      font-size: clamp(44px, 6vw, 64px);
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      font-size: 26px;
+      font-weight: 400;
+      color: var(--soft);
+      line-height: 1.5;
+      max-width: 720px;
+    }
+
+    .section-title {
+      font-size: clamp(30px, 4vw, 40px);
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .body {
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--soft);
+      line-height: 1.65;
+      max-width: 720px;
+    }
+
+    .label {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+
+    /* ─── HMW Title ─── */
+    .hmw-title {
+      font-size: clamp(36px, 5vw, 52px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      max-width: 780px;
+    }
+
+    /* ─── Tags ─── */
+    .tags {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .tag {
+      font-size: 15px;
+      font-weight: 500;
+      padding: 7px 18px;
+      border-radius: 100px;
+      background: var(--card);
+      color: var(--soft);
+    }
+
+    /* ─── Meta ─── */
+    .meta-row {
+      display: flex;
+      gap: 48px;
+      margin-top: 20px;
+    }
+
+    .meta-item .label { margin-bottom: 4px; }
+    .meta-item .value { font-size: 18px; font-weight: 500; }
+
+    /* ─── Media ─── */
+    .full-media {
+      margin-top: 48px;
+    }
+
+    .full-media img,
+    .full-media video {
+      width: 100%;
+      border-radius: var(--radius);
+      display: block;
+    }
+
+    /* ─── Metrics ─── */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--gap);
+      margin-top: 48px;
+    }
+
+    .metric {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 64px 28px;
+      text-align: center;
+    }
+
+    .metric .num {
+      font-size: clamp(40px, 5vw, 56px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .metric .desc {
+      font-size: 17px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    /* ─── Cards ─── */
+    .card-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap);
+      margin-top: 40px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+    }
+
+    .card .card-label {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .card ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card li {
+      font-size: 18px;
+      color: var(--soft);
+      line-height: 1.55;
+      padding-left: 18px;
+      position: relative;
+    }
+
+    .card li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 11px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--faint);
+    }
+
+    /* ─── Iterations ─── */
+    .iteration {
+      margin-top: 64px;
+    }
+
+    .iteration + .iteration {
+      margin-top: 80px;
+    }
+
+    .iteration .iter-label {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .iteration .iter-title {
+      font-size: 26px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .iteration img,
+    .iteration video {
+      width: 100%;
+      border-radius: var(--radius);
+      display: block;
+    }
+
+    .iteration video {
+      max-width: 30%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .iteration.final .iter-label {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* ─── Footer ─── */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      padding: 0;
+    }
+
+    .footer-nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 18px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .footer-nav a:hover { color: var(--text); }
+
+    /* ─── Preview Modal ─── */
+    .preview-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+    }
+
+    .preview-overlay.open {
+      display: flex;
+    }
+
+    .preview-overlay img,
+    .preview-overlay video {
+      max-width: 90vw;
+      max-height: 90vh;
+      border-radius: 16px;
+      object-fit: contain;
+    }
+
+    .previewable {
+      cursor: zoom-in;
+    }
+
+    /* ─── Fade ─── */
+    .fade {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 720px) {
+      .slide { padding: 48px 24px; }
+      .metrics { grid-template-columns: 1fr; }
+      .card-cols { grid-template-columns: 1fr; }
+      .meta-row { flex-wrap: wrap; gap: 24px; }
+      .pagination { right: 12px; gap: 10px; }
+      .pagination button { width: 8px; height: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── Pagination Dots ─── -->
+<nav class="pagination" id="pagination"></nav>
+
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 1 — Hero -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide" id="slide-1">
+  <div class="slide-inner fade">
+    <h1 class="title">OpusClip AI Video Clipping</h1>
+    <div class="tags">
+      <span class="tag">AI Video</span>
+      <span class="tag">Mobile MVP</span>
+      <span class="tag">Consumer App</span>
+      <span class="tag">Creator Tools</span>
+    </div>
+    <div class="meta-row">
+      <div class="meta-item">
+        <div class="label">Role</div>
+        <div class="value">Product Designer</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Time</div>
+        <div class="value">May – Aug 2025</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Team</div>
+        <div class="value">PD · PM · Eng</div>
+      </div>
+    </div>
+    <div class="full-media" style="margin-top: 40px;">
+      <div class="previewable" data-preview-src="https://xuefei.io/assets/opushero.png" data-preview-type="image">
+        <img src="https://xuefei.io/assets/opushero.png" alt="OpusClip Mobile MVP">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 2 — Impact -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide" id="slide-2">
+  <div class="slide-inner fade">
+    <p class="label">Impact</p>
+    <h2 class="section-title" style="margin-top: 10px;">Results across retention, adoption, and publish rate</h2>
+    <div class="metrics">
+      <div class="metric">
+        <div class="num">4.9 ★</div>
+        <div class="desc">App Store rating at launch</div>
+      </div>
+      <div class="metric">
+        <div class="num">26%</div>
+        <div class="desc">Day-1 retention</div>
+      </div>
+      <div class="metric">
+        <div class="num">12%</div>
+        <div class="desc">Desktop-to-mobile shift</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 3 — Background -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide tall" id="slide-3">
+  <div class="slide-inner fade">
+    <p class="label">Background</p>
+    <h2 class="section-title" style="margin-top: 10px;">As creators increasingly film, edit, and publish on their phones, OpusClip needed a mobile experience to support their full workflow.</h2>
+    <div class="full-media">
+      <div class="previewable" data-preview-src="./covers-backup/opus-background-new.png" data-preview-type="image">
+        <img src="./covers-backup/opus-background-new.png" alt="OpusClip desktop and mobile">
+      </div>
+    </div>
+    <div class="card-cols" style="margin-top: 48px;">
+      <div class="card">
+        <div class="card-label">Business Goal</div>
+        <ul>
+          <li>Increase retention and expand the user base</li>
+          <li>Empower creators with on-the-go tools</li>
+          <li>Drive organic growth from the app store</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-label">User Needs</div>
+        <ul>
+          <li>Eliminates the need to transfer mobile-recorded content to a web platform.</li>
+          <li>No need to wait and monitor AI progress. Preview clips and publish directly on mobile without returning to desktop.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 4 — Design Process -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide" id="slide-4">
+  <div class="slide-inner fade" style="text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+    <p class="label">Design Process</p>
+    <h2 class="hmw-title" style="margin-top: 16px;">Simplifying the workflow, rethinking the interaction.</h2>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 5 — Challenge 01: HMW Title -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide slide-hmw" id="slide-5">
+  <div class="slide-inner fade" style="text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+    <p class="label">Design Challenge 01 · Presets</p>
+    <h2 class="hmw-title" style="margin-top: 16px;">HMW help mobile users select presets effortlessly?</h2>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 6 — Challenge 01: Iterations -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide tall" id="slide-6">
+  <div class="slide-inner">
+    <div class="iteration fade">
+      <p class="iter-label">1st Iteration</p>
+      <h3 class="iter-title">All-in-one page</h3>
+      <div class="previewable" data-preview-src="https://xuefei.io/assets/opus-challenge1-1.png" data-preview-type="image">
+        <img src="https://xuefei.io/assets/opus-challenge1-1.png" alt="All-in-one page">
+      </div>
+    </div>
+
+    <div class="iteration fade">
+      <p class="iter-label">2nd Iteration</p>
+      <h3 class="iter-title">Step-by-step wizard</h3>
+      <div class="previewable" data-preview-src="https://xuefei.io/assets/opus-challenge1-2.png" data-preview-type="image">
+        <img src="https://xuefei.io/assets/opus-challenge1-2.png" alt="Step-by-step wizard">
+      </div>
+    </div>
+
+    <div class="iteration fade">
+      <p class="iter-label">3rd Iteration</p>
+      <h3 class="iter-title">One-page summary</h3>
+      <div class="previewable" data-preview-src="https://xuefei.io/assets/opus-challenge1-3.png" data-preview-type="image">
+        <img src="https://xuefei.io/assets/opus-challenge1-3.png" alt="One-page summary">
+      </div>
+    </div>
+
+    <div class="iteration final fade">
+      <p class="iter-label">Final Design</p>
+      <h3 class="iter-title">One summary, one bottom interaction zone</h3>
+      <video src="https://xuefei.io/assets/opus-challenge1-final.webm" autoplay muted loop playsinline></video>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 7 — Challenge 02: HMW Title -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide slide-hmw" id="slide-7">
+  <div class="slide-inner fade" style="text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+    <p class="label">Design Challenge 02 · Compare Clips</p>
+    <h2 class="hmw-title" style="margin-top: 16px;">HMW help mobile users preview and compare AI-generated clips?</h2>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 8 — Challenge 02: Iterations -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide tall" id="slide-8">
+  <div class="slide-inner">
+    <div class="iteration fade">
+      <p class="iter-label">1st Iteration</p>
+      <h3 class="iter-title">Click & scroll</h3>
+      <video src="https://xuefei.io/assets/opus-challenge2-click.webm" autoplay muted loop playsinline></video>
+    </div>
+
+    <div class="iteration fade">
+      <p class="iter-label">2nd Iteration</p>
+      <h3 class="iter-title">Swipe left & right</h3>
+      <video src="https://xuefei.io/assets/opus-challenge2-swipe.webm" autoplay muted loop playsinline></video>
+    </div>
+
+    <div class="iteration final fade">
+      <p class="iter-label">Final Design</p>
+      <h3 class="iter-title">Vertical swipe, explicit controls for context</h3>
+      <div class="previewable" data-preview-src="https://xuefei.io/assets/opus-challenge2-1-new.png" data-preview-type="image">
+        <img src="https://xuefei.io/assets/opus-challenge2-1-new.png" alt="Final design — compare clips">
+      </div>
+      <video src="https://xuefei.io/assets/opus-challenge2-final.webm" autoplay muted loop playsinline style="margin-top: 28px;"></video>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SLIDE 9 — Next Steps -->
+<!-- ═══════════════════════════════════════ -->
+<section class="slide" id="slide-9">
+  <div class="slide-inner fade">
+    <p class="label">Next Steps</p>
+    <h2 class="section-title" style="margin-top: 10px;">Bring advanced editing tools to mobile</h2>
+    <div class="full-media">
+      <div class="previewable" data-preview-src="https://xuefei.io/assets/next-step.png" data-preview-type="image">
+        <img src="https://xuefei.io/assets/next-step.png" alt="Next steps for OpusClip mobile">
+      </div>
+    </div>
+    <div class="footer-nav" style="margin-top: 64px;">
+      <a href="./buzzy-presentation.html">← Buzzy AI Smart Edit</a>
+      <a href="./buzzy-presentation.html">Buzzy AI Smart Edit →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Preview Modal ─── -->
+<div class="preview-overlay" id="previewOverlay">
+  <div id="previewContent"></div>
+</div>
+
+
+<script>
+  // ─── Slides & Pagination ───
+  const slides = document.querySelectorAll('.slide');
+  const pagWrap = document.getElementById('pagination');
+
+  slides.forEach((_, i) => {
+    const btn = document.createElement('button');
+    btn.setAttribute('aria-label', `Slide ${i + 1}`);
+    btn.addEventListener('click', () => {
+      slides[i].scrollIntoView({ behavior: 'smooth' });
+    });
+    pagWrap.appendChild(btn);
+  });
+
+  const pagDots = pagWrap.querySelectorAll('button');
+
+  // ─── Track active slide ───
+  let currentSlide = 0;
+  const slideObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = [...slides].indexOf(entry.target);
+        currentSlide = idx;
+        pagDots.forEach((d, i) => d.classList.toggle('active', i === idx));
+      }
+    });
+  }, { threshold: 0.3 });
+  slides.forEach(s => slideObserver.observe(s));
+
+  // ─── Keyboard nav ───
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+      e.preventDefault();
+      currentSlide = Math.min(currentSlide + 1, slides.length - 1);
+      slides[currentSlide].scrollIntoView({ behavior: 'smooth' });
+    } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+      e.preventDefault();
+      currentSlide = Math.max(currentSlide - 1, 0);
+      slides[currentSlide].scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+
+  // ─── Fade-in on scroll ───
+  const fadeObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('visible');
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade').forEach(el => fadeObserver.observe(el));
+
+  // ─── Preview Modal ───
+  const overlay = document.getElementById('previewOverlay');
+  const previewContent = document.getElementById('previewContent');
+
+  document.querySelectorAll('.previewable').forEach(el => {
+    el.addEventListener('click', () => {
+      previewContent.innerHTML = '';
+      const type = el.dataset.previewType;
+      if (type === 'image') {
+        const img = document.createElement('img');
+        img.src = el.dataset.previewSrc;
+        previewContent.appendChild(img);
+      } else if (type === 'video') {
+        const vid = document.createElement('video');
+        vid.src = el.dataset.previewSrc;
+        vid.autoplay = true;
+        vid.muted = true;
+        vid.loop = true;
+        vid.playsInline = true;
+        previewContent.appendChild(vid);
+      }
+      overlay.classList.add('open');
+    });
+  });
+
+  overlay.addEventListener('click', () => {
+    overlay.classList.remove('open');
+    previewContent.innerHTML = '';
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) {
+      overlay.classList.remove('open');
+      previewContent.innerHTML = '';
+    }
+  });
+</script>
+
+</body>
+</html>
